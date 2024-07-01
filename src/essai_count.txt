@@ -1,0 +1,94 @@
+import os
+import matplotlib.pyplot as plt
+from datetime import datetime
+
+def count_files(directory, image_extensions=None, video_extensions=None):
+    #possibilité de renseigner ou non, les extensions de fichiers.
+    if image_extensions is None:
+        image_extensions = ('.jpg', '.jpeg', '.png')
+    if video_extensions is None:
+        video_extensions = ('.mp4', '.avi', '.mov', '.mkv', '.flv')
+
+    image_count = 0
+    video_count = 0
+
+    try:
+        for file in os.listdir(directory):
+            if os.path.isfile(os.path.join(directory, file)):
+                if file.lower().endswith(image_extensions):
+                    image_count += 1
+                elif file.lower().endswith(video_extensions):
+                    video_count += 1
+    except Exception as e:
+        print(f"Erreur en comptant les fichiers dans le dossier' {directory} ': {e}")
+        raise
+
+    return image_count, video_count
+
+def create_graph(image_count, video_count, output_path):
+    """
+    Create and save a bar graph of image and video counts.
+    
+    Parameters:
+    - image_count (int): Number of image files.
+    - video_count (int): Number of video files.
+    - output_path (str): Path to save the graphic.
+    """
+    categories = ['Images', 'Videos']
+    counts = [image_count, video_count]
+    print(counts)
+
+    plt.figure(figsize=(8, 6))
+    plt.bar(categories, counts, color=['blue', 'red'])
+    plt.xlabel('File Type')
+    plt.ylabel('Count')
+    plt.title('Number of Images and Videos')
+    plt.tight_layout()
+    plt.savefig(output_path)
+    plt.show()
+
+def ensure_directory_exists(directory):
+    #S'assurer que le path que je fourni existe bel et 
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+def get_directory_path():
+    # il faut renseigner juste le path vers le dossier où on veut avoir les graphes.
+    while True:
+        directory = input("Entrer le path du dossier contenant le dossier contenant les fichiers: ")
+        if os.path.isdir(directory):
+            return directory
+        else:
+            print(f"Le path'{directory}' que vous aveez donné est incorrect, veuillez réessayer.")
+
+def get_output_filename():
+
+    filename = input("Entrer le nom du fichier des graphes (exemple si données COcci mettre cocci): ")
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    return f"{filename}_{current_date}.png"
+
+def main():
+    
+    directory = get_directory_path()
+    output_directory = os.path.join(directory, 'results')
+    
+    ensure_directory_exists(output_directory)
+    
+    try:
+        
+        image_count, video_count = count_files(directory)
+        
+        output_filename = get_output_filename()
+        output_path = os.path.join(output_directory, output_filename)
+        
+        create_graph(image_count, video_count, output_path)
+        
+        print(f'Création du graphique dans {output_path}')
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == "__main__":
+    main()
+
+# exemple de path: /media/s3/silver/non-persistent/labeled/a350d0ba-461c-443f-933c-2e7c502ca8a1/09a3bf8f-2463-4bce-8214-9049fed3cd7d/AR/1/1
+# /S3/silver/non-persistent/labeled/a350d0ba-461c-443f-933c-2e7c502ca8a1/09a3bf8f-2463-4bce-8214-9049fed3cd7d/AR/1/1
